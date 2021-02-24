@@ -4,170 +4,177 @@ import NavBar from '../components/navbar'
 import {Button,Modal, Table, Card, Form} from 'react-bootstrap' 
 
 class Siswa extends React.Component {
-    constructor() {  
-        super();  
-        this.state = {  
-          token:"",
-            siswa: [],
-            jur:[],
-            id_siswa:"",
-            nis:"",
-            nama_siswa:"",
-            kelas:"",
-            jurusan:"",
-            poin:"",
-            search:"",
-            action:"",
-          isModalOpen: false
-        }
-        if (localStorage.getItem("token")) {
-          this.state.token = localStorage.getItem("token")
-      } else {
-          window.location = "/login"
+  constructor() {  
+    super();  
+    this.state = {  
+      token:"",
+      siswa: [],
+      jurusan2:[],
+      id_siswa:"",
+      nis:"",
+      nama_siswa:"",
+      kelas:"",
+      jurusan:"",
+      poin:"",
+      search:"",
+      action:"",
+      isModalOpen: false
+    }
+    if (localStorage.getItem("token")) {
+      this.state.token = localStorage.getItem("token")
+    }else{
+      window.location = "/login"
+    }
+    this.headerConfig.bind(this)
+    }
+    
+    headerConfig = () => {
+      let header = {
+        headers: { Authorization: `Bearer ${this.state.token}` }
       }
-
-      this.headerConfig.bind(this)
-}
-headerConfig = () => {
-  let header = {
-      headers: { Authorization: `Bearer ${this.state.token}` }
-  }
-  return header
-}
+      return header
+    }
 
     bind = (event) => {
-        this.setState({[event.target.name]: event.target.value});
+      this.setState({[event.target.name]: event.target.value});
     }
+
     handleAdd = () => {
       this.setState({
-          id_siswa:"",
-          nis:"",
-          nama_siswa:"",
-          kelas:"",
-          jurusan:"",
-          poin:"",
-          search:"",
-          action:"",
-                  action: "insert",
-                  isModalOpen: true
+        id_siswa:"",
+        nis:"",
+        nama_siswa:"",
+        kelas:"",
+        jurusan:"",
+        poin:"",
+        search:"",
+        action:"",
+        action: "insert",
+        isModalOpen: true
       })
-  }
+    }
+
     handleEdit = (item) => {
-        this.setState({
-                    id_siswa: item.id_siswa,
-                    nis: item.nis,
-                    nama_siswa: item.nama_siswa,
-                    kelas: item.kelas,
-                    jurusan: item.jurusan,
-                    poin: item.poin,
-                    action: "update",
-                    isModalOpen: true
-        })
+      this.setState({
+        id_siswa: item.id_siswa,
+        nis: item.nis,
+        nama_siswa: item.nama_siswa,
+        kelas: item.kelas,
+        jurusan: item.jurusan,
+        poin: item.poin,
+        action: "update",
+        isModalOpen: true            
+      })
     }
+
     handleClose = () => {
-        this.setState({
-            isModalOpen: false
-        })
+      this.setState({
+        isModalOpen: false
+      })
     }
+
     handleSave = (event) => {
-        event.preventDefault();
-        /* menampung data nid, nama dan poin dari Form
-        ke dalam FormData() untuk dikirim  */
-        let url = "";
-        if (this.state.action === "insert") {
-          url = "http://localhost:2000/siswa/save"
-        } else {
-          url = "http://localhost:2000/siswa/update"
-        }
-        let form = {
-            id_siswa: this.state.id_siswa,
-            nis: this.state.nis,
-            nama_siswa: this.state.nama_siswa,
-            kelas: this.state.kelas,
-            jurusan: this.state.jurusan,
-            poin: this.state.poin
-          }
-          // mengirim data ke API untuk disimpan pada database
-          axios.post(url, form, this.headerConfig())
-          .then(response => {
-          // jika proses simpan berhasil, memanggil data yang terbaru
-          this.getsiswa();
-          })
-          this.setState({
-            isModalOpen: false
-        })
-        }
-    getsiswa = () => {
-        let url = "http://localhost:2000/siswa";
-        // mengakses api untuk mengambil data siswa
-        axios.get(url, this.headerConfig())
-        .then(response => {
-          // mengisikan data dari respon API ke array siswa
-          this.setState({siswa: response.data.siswa});
-        })
-        .catch(error => {
-          console.log(error);
-        });
+      event.preventDefault();
+      let url = "";
+
+      if (this.state.action === "insert") {
+        url = "http://localhost:2000/siswa/save"
+      }else{
+        url = "http://localhost:2000/siswa/update"
+      }
+
+      let form = {
+        id_siswa: this.state.id_siswa,
+        nis: this.state.nis,
+        nama_siswa: this.state.nama_siswa,
+        kelas: this.state.kelas,
+        jurusan: this.state.jurusan,
+        poin: this.state.poin
+      }
+          
+      axios.post(url, form, this.headerConfig())
+      .then(response => {
+         this.getSiswa();
+      })
+
+      this.setState({
+        isModalOpen: false
+      })
     }
-    getjurusan = () => {
-      let url = "http://localhost:2000/siswa/jurusan";
-      // mengakses api untuk mengambil data siswa
+
+    getSiswa = () => {
+      let url = "http://localhost:2000/siswa";
       axios.get(url, this.headerConfig())
       .then(response => {
-        // mengisikan data dari respon API ke array siswa
-        this.setState({jur: response.data.jurusan});
+        this.setState({siswa: response.data.siswa});
       })
+
       .catch(error => {
         console.log(error);
       });
-  }
+    }
+
+    getJurusan = () => {
+      let url = "http://localhost:2000/siswa/jurusan";
+      axios.get(url, this.headerConfig())
+      .then(response => {
+        this.setState({jurusan2: response.data.jurusan});
+      })
+
+      .catch(error => {
+        console.log(error);
+      });
+    }
+
     componentDidMount(){
-        // method yang pertama kali dipanggil pada saat load page
-        this.getsiswa()
-        this.getjurusan()
+      this.getSiswa()
+      this.getJurusan()
     }
-    findsiswa = (event) => {
-        let url = "http://localhost:2000/siswa";
-        if (event.keyCode === 13) {
-        //   menampung data keyword pencarian
-          let form = {
-            find: this.state.search
-          }
-          // mengakses api untuk mengambil data siswa
-          // berdasarkan keyword
-          axios.post(url, form, this.headerConfig())
-          .then(response => {
-            // mengisikan data dari respon API ke array siswa
-            this.setState({siswa: response.data.siswa});
-          })
-          .catch(error => {
-            console.log(error);
-          });
-        }
+
+    findSiswa = (event) => {
+      let url = "http://localhost:2000/siswa";
+      if (event.keyCode === 13) {
+        
+      let form = {
+        find: this.state.search
+      }
+          
+      axios.post(url, form, this.headerConfig())
+      .then(response => {
+        this.setState({siswa: response.data.siswa});
+      })
+
+      .catch(error => {
+        console.log(error);
+      });
+      }
     }
+
     Drop = (id_siswa) => {
-        let url = "http://localhost:2000/siswa/" + id_siswa;
-        // memanggil url API untuk menghapus data pada database
-        if (window.confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-          axios.delete(url, this.headerConfig())
-          .then(response => {
-            // jika proses hapus data berhasil, memanggil data yang terbaru
-            this.getsiswa();
-          })
-          .catch(error => {
-            console.log(error);
-          });
-        }
+      let url = "http://localhost:2000/siswa/" + id_siswa;
+        
+      if (window.confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+        axios.delete(url, this.headerConfig())
+        .then(response => {
+          this.getSiswa();
+        })
+
+        .catch(error => {
+          console.log(error);
+        });
+      }
     }
+
+
     render(){
-        console.log(this.state.jur)
+        console.log(this.state.jurusan2)
         return(
             <>
             <NavBar />
             <Card>
                 <Card.Header className="card-header bg-info text-white" align={'center'}>Data siswa</Card.Header>
                 <Card.Body>
-                <input type="text" className="form-control mb-2" name="search" value={this.state.search} onChange={this.bind} onKeyUp={this.findsiswa} placeholder="Pencarian..." />
+                <input type="text" className="form-control mb-2" name="search" value={this.state.search} onChange={this.bind} onKeyUp={this.findSiswa} placeholder="Pencarian..." />
                 <Button variant="success" onClick={this.handleAdd}>
                     Tambah Data
                 </Button>
@@ -217,8 +224,8 @@ headerConfig = () => {
                     </Modal.Header>
                     <Form onSubmit={this.handleSave}>
                     <Modal.Body>
-        
-                    ID  <input type="number" name="id_siswa" value={this.state.id_siswa} onChange={this.bind}  
+                        ID  
+                        <input type="number" name="id_siswa" value={this.state.id_siswa} onChange={this.bind}  
                         className="form-control" required />  
                         NIS
                         <input type="text" name="nis" value={this.state.nis} onChange={this.bind}  
@@ -231,14 +238,12 @@ headerConfig = () => {
                         className="form-control" required />  
                         Jurusan
                             <select name="jurusan" value={this.state.jurusan} onChange={this.bind} className="form-control" required>
-                              {this.state.jur.map((item)=> {  
+                              {this.state.jurusan2.map((item)=> {  
                               return ( <option value={item.id_jurusan}>{item.nama_jurusan}</option> )})}
-                            </select>  
-
+                            </select> 
                         Poin  
                         <input type="number" name="poin" value={this.state.poin} onChange={this.bind}  
                         className="form-control" required />  
-                        
                     </Modal.Body>
                      <Modal.Footer>
                      <button className="btn btn-sm btn-success" type="submit">  
